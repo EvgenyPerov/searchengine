@@ -1,13 +1,15 @@
 package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import searchengine.config.Site;
+import searchengine.config.SiteFromProp;
 import searchengine.config.SitesList;
 import searchengine.dto.statistics.DetailedStatisticsItem;
 import searchengine.dto.statistics.StatisticsData;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.dto.statistics.TotalStatistics;
+import searchengine.repository.SiteRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +22,12 @@ public class StatisticsServiceImpl implements StatisticsService {
     private final Random random = new Random();
     private final SitesList sites;
 
+    @Autowired
+    private SiteRepository siteRepository;
+
     @Override
     public StatisticsResponse getStatistics() {
+
         String[] statuses = { "INDEXED", "FAILED", "INDEXING" };
         String[] errors = {
                 "Ошибка индексации: главная страница сайта не доступна",
@@ -34,12 +40,14 @@ public class StatisticsServiceImpl implements StatisticsService {
         total.setIndexing(true);
 
         List<DetailedStatisticsItem> detailed = new ArrayList<>();
-        List<Site> sitesList = sites.getSites();
+        List<SiteFromProp> sitesList = sites.getSites();
         for(int i = 0; i < sitesList.size(); i++) {
-            Site site = sitesList.get(i);
+            SiteFromProp site = sitesList.get(i);
             DetailedStatisticsItem item = new DetailedStatisticsItem();
+
             item.setName(site.getName());
             item.setUrl(site.getUrl());
+
             int pages = random.nextInt(1_000);
             int lemmas = pages * random.nextInt(1_000);
             item.setPages(pages);
