@@ -9,53 +9,55 @@ import searchengine.dto.statistics.DetailedStatisticsItem;
 import searchengine.dto.statistics.StatisticsData;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.dto.statistics.TotalStatistics;
+import searchengine.model.Page;
+import searchengine.model.Site;
+import searchengine.repository.IndexRepository;
 import searchengine.repository.SiteRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
 public class StatisticsServiceImpl implements StatisticsService {
 
-    private final Random random = new Random();
-    private final SitesList sites;
-
     @Autowired
     private SiteRepository siteRepository;
 
+    @Autowired
+    private IndexRepository indexRepository;
+
+    private final SitesList sites;
+
+
     @Override
     public StatisticsResponse getStatistics() {
-
-        String[] statuses = { "INDEXED", "FAILED", "INDEXING" };
-        String[] errors = {
-                "Ошибка индексации: главная страница сайта не доступна",
-                "Ошибка индексации: сайт не доступен",
-                ""
-        };
 
         TotalStatistics total = new TotalStatistics();
         total.setSites(sites.getSites().size());
         total.setIndexing(true);
 
         List<DetailedStatisticsItem> detailed = new ArrayList<>();
-        List<SiteFromProp> sitesList = sites.getSites();
-        for(int i = 0; i < sitesList.size(); i++) {
-            SiteFromProp site = sitesList.get(i);
-            DetailedStatisticsItem item = new DetailedStatisticsItem();
+        for(SiteFromProp siteFromProp : sites.getSites()) {
+            Site site = siteRepository.findByUrl(siteFromProp.getUrl());
 
+            if (site == null) continue;
+
+            List<Page> pageList = site.getPages();  // либо из репозитория
+
+            int pages = pageList.size();
+
+            int lemmas = indexRepository.findAllByPageIn(pageList).size();
+
+            DetailedStatisticsItem item = new DetailedStatisticsItem();
             item.setName(site.getName());
             item.setUrl(site.getUrl());
-
-            int pages = random.nextInt(1_000);
-            int lemmas = pages * random.nextInt(1_000);
             item.setPages(pages);
             item.setLemmas(lemmas);
-            item.setStatus(statuses[i % 3]);
-            item.setError(errors[i % 3]);
-            item.setStatusTime(System.currentTimeMillis() -
-                    (random.nextInt(10_000)));
+            item.setStatus(site.getStatus().name());
+            item.setError(site.getLastError() == null? "": site.getLastError());
+            item.setStatusTime(site.getStatusTime());
+
             total.setPages(total.getPages() + pages);
             total.setLemmas(total.getLemmas() + lemmas);
             detailed.add(item);

@@ -30,18 +30,17 @@ public class LinkFinder extends RecursiveTask<Map<String, Document>> {
             Elements elements;
             try {
                 Thread.sleep(200);
-                document = Jsoup.connect(url)
-                        .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
-                        .referrer("http://www.google.com")
-                        .get();
+                document = Jsoup.connect(url).get();
+
                 linksMap.put(url, document);
                 elements = document.select("a");
                 elements.forEach(el ->  {
-                   String item = el.attr("abs:href");
+                    String item = el.attr("abs:href");
                     if (!item.isEmpty()
                             && !checkUrl.contains(item)
                             && !item.contains("#")
                             && !item.contains("?")
+                            && checkUrl(item)
                             && item.replace("https://www.", "https://").startsWith(rootUrl)){
 
                         linksMap.put(item, document);
@@ -50,10 +49,9 @@ public class LinkFinder extends RecursiveTask<Map<String, Document>> {
                         tasks.add(linkFinderTask);
                         checkUrl.add(item);
 
-                        System.out.println(checkUrl.size());//
                     }
                 });
-            } catch (InterruptedException | IOException ignored) {     }
+            } catch (InterruptedException | IOException ignored) {    }
 
             tasks.forEach(task -> linksMap.putAll(task.join()));
 
@@ -61,6 +59,13 @@ public class LinkFinder extends RecursiveTask<Map<String, Document>> {
             tasks.clear();
 
         return  linksMap;
+    }
+
+    public boolean checkUrl(String item) {
+        String[] url = item.split("/");
+        String lastUrl = url[url.length-1];
+
+        return lastUrl.contains(".") && !lastUrl.endsWith(".html")? false : true;
     }
 
 }

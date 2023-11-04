@@ -17,16 +17,21 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
 indexing-settings:
+
   sites:
-#    - url: https://www.lenta.ru
-#      name: Лента
-#    - url: https://www.skillbox.ru
-#      name: Skillbox
-    - url: https://www.radiomv.ru
-      name: Radiomv
-#    - url: https://ipfran.ru
-#      name: Ipfran
-#    - url: https://www.svetlovka.ru
-#      name: Svetlovka
-#    - url: https://www.playback.ru
-#      name: PlayBack
+#    - url: https://volochek.life
+#      name: Volochek
+#    - url: https://dombulgakova.ru
+#      name: Dombulgakova
+#    - url: https://www.radiodacha.ru/
+#      name: Radiodacha
+#    - url: https://www.radiomv.ru
+#      name: Radiomv
+    - url: https://ipfran.ru
+      name: Ipfran
+    - url: https://www.svetlovka.ru
+      name: Svetlovka
+    - url: https://www.playback.ru
+      name: PlayBack
+#    - url: https://hackaday.com
+#      name: Hackaday

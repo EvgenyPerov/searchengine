@@ -17,13 +17,11 @@ public class Page {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-//    @Transient
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "site_id", nullable = false)
     private Site site;
 
     @Column(nullable = false, unique = true, length = 500)
-//    @Column(columnDefinition = "TEXT NOT NULL", le)
     private String path;
 
     @Column(columnDefinition = "INT NOT NULL")

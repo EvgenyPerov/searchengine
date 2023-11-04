@@ -24,4 +24,8 @@ public class Index {
     @Column(columnDefinition = "FLOAT NOT NULL")
     private Float rang;
 
+    public void increaseRang(Float rang){
+        this.rang = this.rang + rang;
+    }
+
 }

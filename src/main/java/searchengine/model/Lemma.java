@@ -30,4 +30,8 @@ public class Lemma {
     @OneToMany(mappedBy = "lemma")
     private List<Index> indexes = new ArrayList<>();
 
+    public void increaseFrequency(){++frequency;}
+
+    public void decreaseFrequency(){--frequency;}
+
 }

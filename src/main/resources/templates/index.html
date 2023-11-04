@@ -190,15 +190,19 @@
                 )
                 .then(indexResponse => {
 
-          buttonText.innerText = "Start indexing";
-          button.dataset.send = "startIndexing";
-
           if (indexResponse.result) {
+            buttonText.innerText = "Start indexing";
+            button.dataset.send = "startIndexing";
+
             if (button.next('.API-error').length) {
               button.next('.API-error').remove();
             }
           } else {
             document.getElementById('errorMessage').innerText = indexResponse.error;
+            if (indexResponse.error == 'Индексация уже запущена'){
+              buttonText.innerText = "Stop indexing";
+              button.dataset.send = "stopIndexing";
+            }
           }
         });
 
