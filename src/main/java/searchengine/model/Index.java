@@ -13,19 +13,15 @@ public class Index {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+       @ManyToOne
     @JoinColumn(name = "page_id", nullable = false)
     private Page page;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+       @ManyToOne
     @JoinColumn(name = "lemma_id", nullable = false)
     private Lemma lemma;
 
     @Column(columnDefinition = "FLOAT NOT NULL")
     private Float rang;
-
-    public void increaseRang(Float rang){
-        this.rang = this.rang + rang;
-    }
 
 }
