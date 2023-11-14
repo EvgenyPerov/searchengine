@@ -9,7 +9,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "lemmas")
+@Table(name = "lemmas", indexes = {@javax.persistence.Index(name="lemma_ind", columnList = "lemma")})
 public class Lemma {
 
     @Id
