@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import org.jsoup.Jsoup;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,7 +23,7 @@ public class WordService {
     public String splitTextIntoWords(String text) {
 
         StringBuilder stringBuilder = new StringBuilder();
-        String str = "";
+        String str;
         String regex = "[[a-z][A-Z][а-я][А-Я][\\s]?]";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(text);
@@ -41,7 +42,9 @@ public class WordService {
                 stringBuilder.append(massive[i]).append(" ");
             }
         }
-        if (!stringBuilder.toString().isBlank())  stringBuilder.delete(stringBuilder.lastIndexOf(" "), stringBuilder.length());
+        if (!stringBuilder.toString().isBlank())
+            stringBuilder.delete(stringBuilder.lastIndexOf(" "), stringBuilder.length());
+
         return stringBuilder.toString();
     }
 
@@ -57,8 +60,8 @@ public class WordService {
         }
     }
 
-    public HashMap<String, Integer> getLemmasMap(String text) {
-        HashMap<String, Integer> lemmasMap = new HashMap<>();
+    public Map<String, Integer> getLemmasMap(String text) {
+        Map<String, Integer> lemmasMap = new WeakHashMap<>();
         List<String> list = List.of(text.trim().split(" "));
 
         for (String word : list) {
@@ -69,6 +72,7 @@ public class WordService {
                 lemmasMap.put(morphWord, count);
             });
         }
+        list.clear();
         return lemmasMap;
     }
 

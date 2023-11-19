@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Data
@@ -35,4 +36,19 @@ public class Page {
     @OneToMany(mappedBy = "page")
     private List<Index> indexes = new ArrayList<>();
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Page page)) return false;
+        return getId().equals(page.getId())
+                && getSite().equals(page.getSite())
+                && getPath().equals(page.getPath())
+                && getCode().equals(page.getCode())
+                && getContent().equals(page.getContent());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getSite(), getPath(), getCode(), getContent());
+    }
 }

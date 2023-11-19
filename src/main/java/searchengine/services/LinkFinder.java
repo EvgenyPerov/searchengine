@@ -6,6 +6,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RecursiveTask;
 
 
@@ -13,8 +14,7 @@ public class LinkFinder extends RecursiveTask<Map<String, Document>> {
 
     private String url;
     private final String rootUrl;
-
-    private static volatile Set<String> checkUrl = new HashSet<>();
+    protected static Set<String> checkUrlSet = new CopyOnWriteArraySet<>();
 
     public LinkFinder(String rootUrl, String url) {
         this.url = url;
@@ -37,7 +37,7 @@ public class LinkFinder extends RecursiveTask<Map<String, Document>> {
                 elements.forEach(el ->  {
                     String item = el.attr("abs:href");
                     if (!item.isEmpty()
-                            && !checkUrl.contains(item)
+                            && !checkUrlSet.contains(item)
                             && !item.contains("#")
                             && !item.contains("?")
                             && checkUrl(item)
@@ -47,7 +47,7 @@ public class LinkFinder extends RecursiveTask<Map<String, Document>> {
                         LinkFinder linkFinderTask = new LinkFinder(rootUrl, item);
                         linkFinderTask.fork();
                         tasks.add(linkFinderTask);
-                        checkUrl.add(item);
+                        checkUrlSet.add(item);
 
                     }
                 });
@@ -61,7 +61,7 @@ public class LinkFinder extends RecursiveTask<Map<String, Document>> {
         return  linksMap;
     }
 
-    public boolean checkUrl(String item) {
+    private boolean checkUrl(String item) {
         String[] url = item.split("/");
         String lastUrl = url[url.length-1];
 

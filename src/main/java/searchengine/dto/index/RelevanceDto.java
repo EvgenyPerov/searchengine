@@ -10,9 +10,11 @@ public class RelevanceDto {
 
     private searchengine.model.Page page;
     private List<String> words = new ArrayList<>();
-    private float rang;
+    private volatile float rang;
 
     public void increaseRang(float rang){
-        this.rang = this.rang + rang;
+        synchronized (this){
+            this.rang = this.rang + rang;
+        }
     }
 }

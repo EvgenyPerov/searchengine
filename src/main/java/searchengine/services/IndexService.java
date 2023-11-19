@@ -90,8 +90,10 @@ public class IndexService {
             log.info("Обход страниц сайта " + siteFromProp.getUrl() + " начался...");
 
             try {
-                Map<String, Document> resultMapForkJoinOriginal = pool.invoke(new LinkFinder(siteFromProp.getUrl(), site.getUrl()));
+                LinkFinder linkFinder = new LinkFinder(siteFromProp.getUrl(), site.getUrl());
+                Map<String, Document> resultMapForkJoinOriginal = pool.invoke(linkFinder);
                 pool.shutdown();
+//                linkFinder.checkUrlSet = null; // очистка памяти
 
                 log.info("Найдено страниц для индексации = " + resultMapForkJoinOriginal.size());
                 if (resultMapForkJoinOriginal.size() < 2) continue;
@@ -105,7 +107,7 @@ public class IndexService {
                     System.out.println(wordService.deleteTagsFromContent(pair.getValue().html()));
                     resultMapForkJoin.put(pair.getKey(), pair.getValue());
                     ++count2;
-                    if (count2 >= 5) break;
+                    if (count2 >= 2) break;
                 }
 
                 //***********************************************************************************
@@ -135,7 +137,7 @@ public class IndexService {
 
                 String splitedText = wordService.splitTextIntoWords(contentWithoutTag);
 
-                HashMap<String, Integer> lemmasMap = wordService.getLemmasMap(splitedText);
+                Map<String, Integer> lemmasMap = wordService.getLemmasMap(splitedText);
                 log.info("Для страницы " + pair.getKey() + " найдено лемм = " + lemmasMap.size()); //
 
                 HashMap<Lemma,Integer> newLemmas = updateLemmas(lemmasMap, site);
@@ -303,11 +305,13 @@ public class IndexService {
             }
         }
 
-         if ( domainSite == null){
+         if (domainSite == null){
+             log.info("Заданный " +  corrUrl + " находится за пределами сайтов, указанных в конфигурационном файле!");
              response.setError("Данная страница находится за пределами сайтов, указанных в конфигурационном файле!");
              return response;
          }
          try {
+             log.info("Обработка страницы " + corrUrl); //
              Site site = siteRepository.findByUrl(domainSite.getUrl());
 
              if (site == null) {
@@ -324,7 +328,7 @@ public class IndexService {
 
              String splitedText = wordService.splitTextIntoWords(contentWithoutTag);
 
-             HashMap<String, Integer> lemmasMap = wordService.getLemmasMap(splitedText);
+             Map<String, Integer> lemmasMap = wordService.getLemmasMap(splitedText);
              log.info("Для страницы " +corrUrl + " найдено лемм = " + lemmasMap.size()); //
 
              Optional<searchengine.model.Page> page = pageRepository.findByPath(corrUrl);
@@ -367,10 +371,14 @@ public class IndexService {
     private void deleteLemma(List<Lemma> lemmas) {
         lemmas.forEach(lemma -> {
             lemma.getIndexes().clear();
-            if (lemma.getFrequency()>1) {
-                lemma.decreaseFrequency();
-                lemmaRepository.save(lemma);
-            }  else { lemmaRepository.delete(lemma);  }
+            synchronized (lemma) {
+                if (lemma.getFrequency() > 1) {
+                    lemma.decreaseFrequency();
+                    lemmaRepository.save(lemma);
+                } else {
+                    lemmaRepository.delete(lemma);
+                }
+            }
         });
         log.info("Удаление лемм выполнено");
     }
@@ -390,7 +398,7 @@ public class IndexService {
 
 
 
-    public HashMap<Lemma, Integer> updateLemmas(HashMap<String, Integer> lemmasMap , Site site){
+    public HashMap<Lemma, Integer> updateLemmas(Map<String, Integer> lemmasMap , Site site){
         HashMap<Lemma, Integer> lemmasResult = new HashMap<>();
 
         List<Lemma> lemmasFromRepo = lemmaRepository.findAllBySiteAndLemmaIn(site, lemmasMap.keySet());
@@ -413,8 +421,11 @@ public class IndexService {
                     site.getLemmas().add(newLemma);
 
                 } else {
-                    lemma.get().increaseFrequency();
-                    lemmaRepository.save(lemma.get());
+                    synchronized (lemma.get()){
+                        lemma.get().increaseFrequency();
+                        lemmaRepository.save(lemma.get());
+                    }
+
                     lemmasResult.put(lemma.get(), pair.getValue());
                     site.getLemmas().add(lemma.get());
                 }
@@ -455,7 +466,7 @@ public class IndexService {
 
         String splitedText = wordService.splitTextIntoWords(searchDto.getQuery());
 
-        HashMap<String, Integer> lemmasMap = wordService.getLemmasMap(splitedText);
+        Map<String, Integer> lemmasMap = wordService.getLemmasMap(splitedText);
 
         int limit = searchDto.getLimit()==0? 20 : searchDto.getLimit();
         Pageable next = PageRequest.of(searchDto.getOffset(), limit);

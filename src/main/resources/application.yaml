@@ -23,8 +23,8 @@ indexing-settings:
 #      name: Volochek
 #    - url: https://dombulgakova.ru
 #      name: Dombulgakova
-#    - url: https://www.radiodacha.ru/
-#      name: Radiodacha
+    - url: https://www.radiodacha.ru/
+      name: Radiodacha
 #    - url: https://www.radiomv.ru
 #      name: Radiomv
     - url: https://ipfran.ru

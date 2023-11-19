@@ -6,10 +6,11 @@ import lombok.Data;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Data
-@Table(name = "lemmas", indexes = {@javax.persistence.Index(name="lemma_ind", columnList = "lemma")})
+@Table(name = "lemmas", indexes = {@javax.persistence.Index(name="lemma_id", columnList = "lemma")})
 public class Lemma {
 
     @Id
@@ -24,7 +25,7 @@ public class Lemma {
     private String lemma;
 
     @Column(columnDefinition = "INT NOT NULL")
-    private Integer frequency;
+    private volatile Integer frequency;
 
     @JsonIgnore
     @OneToMany(mappedBy = "lemma")
@@ -34,4 +35,18 @@ public class Lemma {
 
     public void decreaseFrequency(){--frequency;}
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Lemma lemma1)) return false;
+        return getId().equals(lemma1.getId())
+                && getSite().equals(lemma1.getSite())
+                && getLemma().equals(lemma1.getLemma())
+                && getFrequency().equals(lemma1.getFrequency());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getSite(), getLemma(), getFrequency());
+    }
 }
